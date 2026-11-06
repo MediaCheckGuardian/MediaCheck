@@ -3,263 +3,146 @@
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#101827">
 <title>MEDIA CHECK</title>
-
 <style>
-* {
-  box-sizing: border-box;
-}
-
-body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-  background: #f2f4f8;
-  color: #172033;
-}
-
-header {
-  background: #101827;
-  color: white;
-  padding: 25px 20px;
-}
-
-.logo {
-  font-size: 27px;
-  font-weight: bold;
-  letter-spacing: 1px;
-}
-
-.logo span {
-  color: #45a5ef;
-}
-
-header p {
-  color: #b8c4d5;
-  font-size: 13px;
-}
-
-main {
-  max-width: 650px;
-  margin: 30px auto;
-  padding: 0 18px;
-}
-
-.intro {
-  margin-bottom: 25px;
-}
-
-.intro h1 {
-  font-size: 25px;
-}
-
-.intro p {
-  color: #667085;
-  line-height: 1.5;
-}
-
-.panel {
-  background: white;
-  padding: 22px;
-  border-radius: 14px;
-  box-shadow: 0 3px 15px #0000000c;
-  margin-bottom: 20px;
-}
-
-label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: 10px;
-}
-
-input, select {
-  width: 100%;
-  padding: 14px;
-  border: 1px solid #d5dce5;
-  border-radius: 8px;
-  font-size: 16px;
-  margin-bottom: 16px;
-  background: white;
-}
-
-button {
-  width: 100%;
-  border: none;
-  padding: 15px;
-  border-radius: 8px;
-  background: #1976d2;
-  color: white;
-  font-size: 16px;
-  font-weight: bold;
-  cursor: pointer;
-}
-
-button:active {
-  opacity: .8;
-}
-
-h2 {
-  font-size: 19px;
-}
-
-.categories {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
-
-.category {
-  background: #f2f5fa;
-  padding: 17px 10px;
-  border-radius: 10px;
-  text-align: center;
-  font-size: 14px;
-  font-weight: bold;
-}
-
-.category span {
-  display: block;
-  font-size: 23px;
-  margin-bottom: 8px;
-}
-
-#message {
-  display: none;
-  padding: 15px;
-  margin-top: 16px;
-  border-radius: 8px;
-  background: #eaf3ff;
-  color: #164c82;
-  line-height: 1.5;
-}
-
-footer {
-  text-align: center;
-  padding: 25px;
-  color: #778195;
-  font-size: 12px;
-}
+*{box-sizing:border-box}
+body{margin:0;background:#f1f4f8;color:#172033;font-family:Arial,sans-serif}
+header{background:#101827;color:white;padding:24px}
+.logo{font-size:27px;font-weight:bold}
+.logo span{color:#45a5ef}
+header p{color:#bdc8d8;font-size:13px}
+main{max-width:750px;margin:25px auto;padding:0 15px}
+.panel{background:white;padding:20px;border-radius:13px;margin-bottom:18px;box-shadow:0 3px 12px #0000000b}
+h1{font-size:24px}
+h2{font-size:19px}
+p{line-height:1.5}
+label{display:block;font-weight:bold;margin:14px 0 8px}
+input,select{width:100%;padding:14px;border:1px solid #d5dce5;border-radius:8px;font-size:16px;background:white}
+button{border:0;border-radius:8px;padding:13px;background:#1976d2;color:white;font-weight:bold;font-size:15px;cursor:pointer}
+button.secondary{background:#eaf1f9;color:#164c82}
+.searchbtn{width:100%;margin-top:15px}
+.source{display:block;text-decoration:none;color:#175fa8;background:#f1f5fa;padding:14px;border-radius:8px;margin:9px 0}
+.source b{display:block;margin-bottom:5px}
+small{color:#64748b}
+.hidden{display:none}
+footer{text-align:center;color:#718096;padding:25px;font-size:12px}
 </style>
 </head>
-
 <body>
-
 <header>
-  <div class="logo">MEDIA <span>CHECK</span></div>
-  <p>Comprendre qui informe et qui influence.</p>
+ <div class="logo">MEDIA <span>CHECK</span></div>
+ <p>Identifier. Comprendre. Vérifier.</p>
 </header>
-
 <main>
+ <section class="panel">
+  <h1>Analyse d'un profil</h1>
+  <p>Recherchez un média, un créateur de contenu ou une personnalité.</p>
 
-  <section class="intro">
-    <h1>Identifier. Comprendre. Vérifier.</h1>
-    <p>
-      Analyse des médias, créateurs de contenu,
-      personnalités politiques et influenceurs.
-    </p>
-  </section>
+  <label for="nom">Nom ou pseudonyme</label>
+  <input id="nom" placeholder="Ex : CNEWS, HugoDécrypte...">
 
-  <section class="panel">
-    <label for="search">Nom du média ou du créateur</label>
+  <label for="type">Catégorie</label>
+  <select id="type">
+   <option>Média</option>
+   <option>Créateur politique</option>
+   <option>Personnalité politique</option>
+   <option>Influenceur</option>
+   <option>Compte collectif ou anonyme</option>
+  </select>
 
-    <input
-      type="text"
-      id="search"
-      placeholder="Ex : CNEWS, HugoDécrypte..."
-    >
+  <button class="searchbtn" onclick="analyser()">Lancer les recherches</button>
+ </section>
 
-    <label for="type">Catégorie</label>
+ <section id="resultats" class="panel hidden">
+  <h2 id="titre"></h2>
+  <p>Voici les recherches documentaires disponibles.</p>
+  <div id="liens"></div>
+  <p><small>Les résultats doivent être consultés et vérifiés. Une recherche ne constitue pas une preuve.</small></p>
+  <button class="secondary" onclick="enregistrer()">Enregistrer ce profil</button>
+ </section>
 
-    <select id="type">
-      <option>Média</option>
-      <option>Créateur politique</option>
-      <option>Personnalité politique</option>
-      <option>Influenceur</option>
-      <option>Compte collectif ou anonyme</option>
-    </select>
+ <section class="panel">
+  <h2>Profils enregistrés</h2>
+  <div id="historique">Aucun profil enregistré.</div>
+ </section>
 
-    <button onclick="rechercher()">
-      🔎 Analyser ce profil
-    </button>
-
-    <div id="message"></div>
-  </section>
-
-  <section class="panel">
-    <h2>Rubriques d'analyse</h2>
-
-    <div class="categories">
-      <div class="category">
-        <span>📰</span>
-        Ligne éditoriale
-      </div>
-
-      <div class="category">
-        <span>⚖️</span>
-        Orientation politique
-      </div>
-
-      <div class="category">
-        <span>🏢</span>
-        Propriétaires
-      </div>
-
-      <div class="category">
-        <span>📅</span>
-        Ancienneté
-      </div>
-
-      <div class="category">
-        <span>🔍</span>
-        Controverses
-      </div>
-
-      <div class="category">
-        <span>📚</span>
-        Sources
-      </div>
-    </div>
-  </section>
-
-  <section class="panel">
-    <h2>📡 Veille hebdomadaire</h2>
-    <p>
-      Suivi des changements concernant les profils
-      que vous souhaitez surveiller.
-    </p>
-    <p style="color:#778195;font-size:13px">
-      Fonctionnalité à venir.
-    </p>
-  </section>
-
+ <section class="panel">
+  <h2>Veille hebdomadaire</h2>
+  <p>La surveillance des profils sera ajoutée dans une prochaine version.</p>
+  <small>La veille automatique nécessitera un service de collecte planifié.</small>
+ </section>
 </main>
 
-<footer>
-  MEDIA CHECK – Version 1.0<br>
-  Informations publiques et sources vérifiables.
-</footer>
+<footer>MEDIA CHECK – Version 1.1</footer>
 
 <script>
-function rechercher() {
-  const nom = document.getElementById("search").value.trim();
-  const type = document.getElementById("type").value;
-  const message = document.getElementById("message");
+let profilActuel = null;
 
-  message.style.display = "block";
+function analyser(){
+ const nom=document.getElementById("nom").value.trim();
+ const type=document.getElementById("type").value;
+ if(!nom){alert("Saisissez un nom.");return;}
 
-  if (!nom) {
-    message.textContent =
-      "Veuillez saisir un nom avant de lancer la recherche.";
-    return;
-  }
+ profilActuel={nom,type};
+ document.getElementById("titre").textContent=nom+" – "+type;
 
-  message.textContent =
-    "Profil sélectionné : " + nom +
-    " (" + type + "). " +
-    "Le moteur d'analyse documentaire sera connecté à la prochaine étape.";
+ const recherches=[
+  ["Ligne éditoriale","ligne éditoriale thèmes traitement actualité"],
+  ["Orientation politique","orientation politique prises de position déclarations"],
+  ["Propriétaires et financement","propriétaire actionnaires société éditrice financement"],
+  ["Ancienneté et historique","date création histoire historique"],
+  ["Controverses","controverses polémiques décisions justice condamnations"],
+  ["Réseaux sociaux","comptes officiels YouTube Instagram TikTok X"],
+  ["Sources officielles","site officiel mentions légales identité juridique"]
+ ];
+
+ const zone=document.getElementById("liens");
+ zone.innerHTML="";
+
+ recherches.forEach(([titre,termes])=>{
+  const query=encodeURIComponent('"'+nom+'" '+termes);
+  const a=document.createElement("a");
+  a.className="source";
+  a.href="https://www.google.com/search?q="+query;
+  a.target="_blank";
+  a.rel="noopener noreferrer";
+  const b=document.createElement("b");
+  b.textContent=titre;
+  const small=document.createElement("small");
+  small.textContent="Ouvrir la recherche documentaire ↗";
+  a.append(b,small);
+  zone.appendChild(a);
+ });
+
+ document.getElementById("resultats").classList.remove("hidden");
+ document.getElementById("resultats").scrollIntoView({behavior:"smooth"});
 }
-</script>
 
+function enregistrer(){
+ if(!profilActuel)return;
+ let liste=JSON.parse(localStorage.getItem("mediaCheck")||"[]");
+ if(!liste.some(p=>p.nom.toLowerCase()===profilActuel.nom.toLowerCase())){
+  liste.push(profilActuel);
+  localStorage.setItem("mediaCheck",JSON.stringify(liste));
+ }
+ afficher();
+ alert("Profil enregistré sur cet appareil.");
+}
+
+function afficher(){
+ const liste=JSON.parse(localStorage.getItem("mediaCheck")||"[]");
+ const zone=document.getElementById("historique");
+ zone.innerHTML="";
+ if(!liste.length){zone.textContent="Aucun profil enregistré.";return;}
+ liste.forEach(p=>{
+  const div=document.createElement("p");
+  div.textContent=p.nom+" – "+p.type;
+  zone.appendChild(div);
+ });
+}
+afficher();
+</script>
 </body>
 </html>
