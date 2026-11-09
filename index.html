@@ -98,6 +98,8 @@ footer{text-align:center;color:#718096;padding:25px;font-size:12px}
 <script>
 let profilActuel=null;
 
+const API_URL="https://media-check-api.fritznomed0.workers.dev/api/analyze";
+
 const rubriques=[
  ["Identité et présentation","présentation officielle identité biographie mentions légales"],
  ["Ligne éditoriale","ligne éditoriale thèmes traitement actualité rédaction"],
@@ -110,11 +112,14 @@ const rubriques=[
  ["Sources et références","site officiel rapports études documents sources presse"]
 ];
 
-function analyser(){
+async function analyser(){
  const nom=document.getElementById("nom").value.trim();
  const type=document.getElementById("type").value;
 
- if(!nom){alert("Saisissez un nom avant de continuer.");return;}
+ if(!nom){
+  alert("Saisissez un nom avant de continuer.");
+  return;
+ }
 
  profilActuel={nom,type};
 
@@ -147,6 +152,81 @@ function analyser(){
 
  document.getElementById("fiche").classList.remove("hidden");
  document.getElementById("fiche").scrollIntoView({behavior:"smooth"});
+
+ // Recherche documentaire sur Cloudflare
+ let resultat=document.getElementById("resultats-api");
+
+ if(!resultat){
+  resultat=document.createElement("div");
+  resultat.id="resultats-api";
+  resultat.className="section";
+  zone.parentNode.insertBefore(resultat,zone);
+ }
+
+ resultat.innerHTML="";
+ const titreAPI=document.createElement("h3");
+ titreAPI.textContent="Recherche documentaire MEDIA CHECK";
+ const attente=document.createElement("p");
+ attente.textContent="Recherche de sources en cours...";
+ resultat.append(titreAPI,attente);
+
+ try{
+  const reponse=await fetch(API_URL,{
+   method:"POST",
+   headers:{"Content-Type":"application/json"},
+   body:JSON.stringify({name:nom,type:type})
+  });
+
+  if(!reponse.ok){
+   throw new Error("Erreur HTTP "+reponse.status);
+  }
+
+  const donnees=await reponse.json();
+  resultat.innerHTML="";
+  resultat.appendChild(titreAPI);
+
+  const message=document.createElement("p");
+  message.textContent=donnees.message||"Recherche terminée.";
+  resultat.appendChild(message);
+
+  const sources=donnees.analysis?.sources||[];
+
+  if(sources.length){
+   sources.forEach(source=>{
+    const bloc=document.createElement("p");
+
+    const lien=document.createElement("a");
+    lien.className="source";
+    lien.textContent=source.title||"Consulter la source";
+    lien.href=source.url;
+    lien.target="_blank";
+    lien.rel="noopener noreferrer";
+
+    bloc.appendChild(lien);
+
+    if(source.snippet){
+     const extrait=document.createElement("p");
+     extrait.textContent=source.snippet;
+     bloc.appendChild(extrait);
+    }
+
+    resultat.appendChild(bloc);
+   });
+  }else{
+   const vide=document.createElement("p");
+   vide.textContent="Aucune source documentaire trouvée pour cette recherche.";
+   resultat.appendChild(vide);
+  }
+
+ }catch(erreur){
+  resultat.innerHTML="";
+  resultat.appendChild(titreAPI);
+
+  const erreurTexte=document.createElement("p");
+  erreurTexte.textContent="Impossible de contacter le moteur documentaire. Vérifiez votre connexion et réessayez.";
+  resultat.appendChild(erreurTexte);
+  console.error(erreur);
+ }
 }
 
 function enregistrer(){
