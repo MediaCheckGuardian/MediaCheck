@@ -65,6 +65,11 @@ footer{text-align:center;color:#718096;padding:25px;font-size:12px}
 
  <div id="sections"></div>
 
+<div id="resultats-api" class="section">
+ <h3>Recherche documentaire MEDIA CHECK</h3>
+ <p>Les résultats documentaires apparaîtront ici.</p>
+</div>
+
  <div class="section">
   <h3>Conclusion de l'analyse</h3>
   <p>
@@ -197,16 +202,16 @@ async function analyser(){
 
     const lien=document.createElement("a");
     lien.className="source";
-    lien.textContent=source.title||"Consulter la source";
+    lien.textContent=source.titre||source.title||"Consulter la source";
     lien.href=source.url;
     lien.target="_blank";
     lien.rel="noopener noreferrer";
 
     bloc.appendChild(lien);
 
-    if(source.snippet){
+    if(source.extrait||source.snippet){
      const extrait=document.createElement("p");
-     extrait.textContent=source.snippet;
+     extrait.textContent=source.extrait||source.snippet;
      bloc.appendChild(extrait);
     }
 
