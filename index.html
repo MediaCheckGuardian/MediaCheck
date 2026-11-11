@@ -100,12 +100,12 @@ footer{text-align:center;color:#718096;padding:25px;font-size:12px}
 
 <footer>MEDIA CHECK – Version 1.2</footer>
 
-<script>
-let profilActuel=null;
 
-const API_URL="https://media-check-api.fritznomed0.workers.dev/api/analyze";
+let profilActuel = null;
 
-const rubriques=[
+const API_URL = "https://media-check-api.fritznomed0.workers.dev/api/analyze";
+
+const rubriques = [
  ["Identité et présentation","présentation officielle identité biographie mentions légales"],
  ["Ligne éditoriale","ligne éditoriale thèmes traitement actualité rédaction"],
  ["Positionnement politique","orientation politique positionnement prises de position déclarations"],
@@ -114,158 +114,240 @@ const rubriques=[
  ["Historique et ancienneté","date création histoire évolution historique"],
  ["Controverses et décisions officielles","controverses polémiques décisions ARCOM justice condamnations"],
  ["Présence sur les réseaux sociaux","comptes officiels YouTube Instagram TikTok Facebook X"],
- ["Sources et références","site officiel rapports études documents sources presse"]
+ ["Sources et références","site officiel rapports études documents sources"]
 ];
 
-async function analyser(){
- const nom=document.getElementById("nom").value.trim();
- const type=document.getElementById("type").value;
+async function analyser() {
+ const nom = document.getElementById("nom").value.trim();
+ const type = document.getElementById("type").value;
 
- if(!nom){
+ if (!nom) {
   alert("Saisissez un nom avant de continuer.");
   return;
  }
 
- profilActuel={nom,type};
+ profilActuel = { nom, type };
 
- document.getElementById("titre").textContent=nom;
- document.getElementById("categorie").textContent="Catégorie : "+type;
+ document.getElementById("titre").textContent = nom;
+ document.getElementById("categorie").textContent = "Catégorie : " + type;
 
- const zone=document.getElementById("sections");
- zone.innerHTML="";
+ const zone = document.getElementById("sections");
+ zone.innerHTML = "";
 
- rubriques.forEach((r,i)=>{
-  const bloc=document.createElement("div");
-  bloc.className="section";
+ const descriptions = [];
 
-  const titre=document.createElement("h3");
-  titre.textContent=(i+1)+". "+r[0];
+ rubriques.forEach((r, i) => {
+  const bloc = document.createElement("div");
+  bloc.className = "section";
 
-  const description=document.createElement("p");
-  description.textContent="Informations à rechercher et à vérifier dans les sources publiques.";
+  const titre = document.createElement("h3");
+  titre.textContent = (i + 1) + ". " + r[0];
 
-  const lien=document.createElement("a");
-  lien.className="source";
-  lien.textContent="Rechercher les informations ↗";
-  lien.href="https://www.google.com/search?q="+encodeURIComponent('"'+nom+'" '+r[1]);
-  lien.target="_blank";
-  lien.rel="noopener noreferrer";
+  const description = document.createElement("p");
+  description.textContent = "Recherche documentaire en cours...";
 
-  bloc.append(titre,description,lien);
+  const statut = document.createElement("p");
+  statut.className = "note";
+
+  const sourcesRubrique = document.createElement("div");
+
+  const lien = document.createElement("a");
+  lien.className = "source";
+  lien.textContent = "Rechercher les informations ↗";
+  lien.href = "https://www.google.com/search?q=" +
+   encodeURIComponent('"' + nom + '" ' + r[1]);
+  lien.target = "_blank";
+  lien.rel = "noopener noreferrer";
+
+  bloc.append(titre, description, statut, sourcesRubrique, lien);
   zone.appendChild(bloc);
+
+  descriptions.push({
+   description,
+   statut,
+   sourcesRubrique
+  });
  });
 
  document.getElementById("fiche").classList.remove("hidden");
- document.getElementById("fiche").scrollIntoView({behavior:"smooth"});
+ document.getElementById("fiche").scrollIntoView({ behavior: "smooth" });
 
- // Recherche documentaire sur Cloudflare
- let resultat=document.getElementById("resultats-api");
+ const resultat = document.getElementById("resultats-api");
+ resultat.innerHTML = "";
 
- if(!resultat){
-  resultat=document.createElement("div");
-  resultat.id="resultats-api";
-  resultat.className="section";
-  zone.parentNode.insertBefore(resultat,zone);
- }
+ const titreAPI = document.createElement("h3");
+ titreAPI.textContent = "Recherche documentaire MEDIA CHECK";
 
- resultat.innerHTML="";
- const titreAPI=document.createElement("h3");
- titreAPI.textContent="Recherche documentaire MEDIA CHECK";
- const attente=document.createElement("p");
- attente.textContent="Recherche de sources en cours...";
- resultat.append(titreAPI,attente);
+ const attente = document.createElement("p");
+ attente.textContent = "Recherche des sources et préparation des résumés...";
 
- try{
-  const reponse=await fetch(API_URL,{
-   method:"POST",
-   headers:{"Content-Type":"application/json"},
-   body:JSON.stringify({name:nom,type:type})
+ resultat.append(titreAPI, attente);
+
+ try {
+  const reponse = await fetch(API_URL, {
+   method: "POST",
+   headers: { "Content-Type": "application/json" },
+   body: JSON.stringify({ name: nom, type: type })
   });
 
-  if(!reponse.ok){
-   throw new Error("Erreur HTTP "+reponse.status);
+  if (!reponse.ok) {
+   throw new Error("Erreur HTTP " + reponse.status);
   }
 
-  const donnees=await reponse.json();
-  resultat.innerHTML="";
+  const donnees = await reponse.json();
+
+  resultat.innerHTML = "";
   resultat.appendChild(titreAPI);
 
-  const message=document.createElement("p");
-  message.textContent=donnees.message||"Recherche terminée.";
+  const message = document.createElement("p");
+  message.textContent = donnees.message || "Recherche terminée.";
   resultat.appendChild(message);
 
-  const sources=donnees.analysis?.sources||[];
+  // Affichage des neuf résultats dans les bonnes rubriques.
+  const resultats = donnees.analysis?.rubriques || [];
 
-  if(sources.length){
-   sources.forEach(source=>{
-    const bloc=document.createElement("p");
+  resultats.forEach(rubrique => {
+   const index = rubriques.findIndex(r => {
+    const identifiant = r[0].toLowerCase();
+    return identifiant === rubrique.titre?.toLowerCase();
+   });
 
-    const lien=document.createElement("a");
-    lien.className="source";
-    lien.textContent=source.titre||source.title||"Consulter la source";
-    lien.href=source.url;
-    lien.target="_blank";
-    lien.rel="noopener noreferrer";
+   // Correspondance par identifiant technique.
+   const correspondances = [
+    "identite",
+    "ligne_editoriale",
+    "positionnement_politique",
+    "proprietaires",
+    "financement",
+    "historique",
+    "controverses",
+    "reseaux_sociaux",
+    "sources"
+   ];
+
+   const position = correspondances.indexOf(rubrique.id);
+
+   if (position < 0 || !descriptions[position]) return;
+
+   const elements = descriptions[position];
+
+   elements.description.textContent =
+    rubrique.resume || "Aucun résumé disponible.";
+
+   const libelles = {
+    pistes_a_verifier: "Pistes documentaires à vérifier.",
+    informations_insuffisantes: "Informations insuffisantes pour conclure.",
+    recherche_indisponible: "Recherche indisponible : aucune conclusion possible."
+   };
+
+   elements.statut.textContent =
+    libelles[rubrique.statut] || "Statut non précisé.";
+
+   // Affichage des sources propres à chaque rubrique.
+   (rubrique.sources || []).forEach(source => {
+    if (!source.url || !/^https?:\/\//i.test(source.url)) return;
+
+    const lienSource = document.createElement("a");
+    lienSource.className = "source";
+    lienSource.textContent = source.titre || "Consulter la source";
+    lienSource.href = source.url;
+    lienSource.target = "_blank";
+    lienSource.rel = "noopener noreferrer";
+
+    elements.sourcesRubrique.appendChild(lienSource);
+   });
+  });
+
+  // Affichage de toutes les sources documentaires.
+  const sources = donnees.analysis?.sources || [];
+
+  const titreSources = document.createElement("h3");
+  titreSources.textContent = "Ensemble des sources documentaires";
+  resultat.appendChild(titreSources);
+
+  if (sources.length) {
+   sources.forEach(source => {
+    if (!source.url || !/^https?:\/\//i.test(source.url)) return;
+
+    const bloc = document.createElement("p");
+
+    const lien = document.createElement("a");
+    lien.className = "source";
+    lien.textContent = source.titre || "Consulter la source";
+    lien.href = source.url;
+    lien.target = "_blank";
+    lien.rel = "noopener noreferrer";
 
     bloc.appendChild(lien);
 
-    if(source.extrait||source.snippet){
-     const extrait=document.createElement("p");
-     extrait.textContent=source.extrait||source.snippet;
+    if (source.extrait) {
+     const extrait = document.createElement("p");
+     extrait.textContent = source.extrait;
      bloc.appendChild(extrait);
     }
 
     resultat.appendChild(bloc);
    });
-  }else{
-   const vide=document.createElement("p");
-   vide.textContent="Aucune source documentaire trouvée pour cette recherche.";
+  } else {
+   const vide = document.createElement("p");
+   vide.textContent = "Aucune source documentaire trouvée.";
    resultat.appendChild(vide);
   }
 
- }catch(erreur){
-  resultat.innerHTML="";
+  if (resultats.length === 0) {
+   const avertissement = document.createElement("p");
+   avertissement.textContent =
+    "Les résumés des rubriques n'ont pas été reçus du moteur documentaire.";
+   resultat.appendChild(avertissement);
+  }
+
+ } catch (erreur) {
+  resultat.innerHTML = "";
   resultat.appendChild(titreAPI);
 
-  const erreurTexte=document.createElement("p");
-  erreurTexte.textContent="Impossible de contacter le moteur documentaire. Vérifiez votre connexion et réessayez.";
+  const erreurTexte = document.createElement("p");
+  erreurTexte.textContent =
+   "Impossible de contacter le moteur documentaire. Vérifiez votre connexion et réessayez.";
+
   resultat.appendChild(erreurTexte);
   console.error(erreur);
  }
 }
 
-function enregistrer(){
- if(!profilActuel)return;
+function enregistrer() {
+ if (!profilActuel) return;
 
- let liste=JSON.parse(localStorage.getItem("mediaCheck")||"[]");
+ let liste = JSON.parse(localStorage.getItem("mediaCheck") || "[]");
 
- if(!liste.some(p=>p.nom.toLowerCase()===profilActuel.nom.toLowerCase())){
+ if (!liste.some(p =>
+  p.nom.toLowerCase() === profilActuel.nom.toLowerCase()
+ )) {
   liste.push(profilActuel);
-  localStorage.setItem("mediaCheck",JSON.stringify(liste));
+  localStorage.setItem("mediaCheck", JSON.stringify(liste));
  }
 
  afficher();
  alert("Profil enregistré sur cet appareil.");
 }
 
-function afficher(){
- const liste=JSON.parse(localStorage.getItem("mediaCheck")||"[]");
- const zone=document.getElementById("historique");
- zone.innerHTML="";
+function afficher() {
+ const liste = JSON.parse(localStorage.getItem("mediaCheck") || "[]");
+ const zone = document.getElementById("historique");
+ zone.innerHTML = "";
 
- if(!liste.length){
-  zone.textContent="Aucun profil enregistré.";
+ if (!liste.length) {
+  zone.textContent = "Aucun profil enregistré.";
   return;
  }
 
- liste.forEach(p=>{
-  const div=document.createElement("p");
-  div.textContent=p.nom+" – "+p.type;
+ liste.forEach(p => {
+  const div = document.createElement("p");
+  div.textContent = p.nom + " – " + p.type;
   zone.appendChild(div);
  });
 }
 
 afficher();
-</script>
+
 </body>
 </html>
